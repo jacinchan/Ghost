@@ -39,11 +39,11 @@ strategies = {
                 if (model) {
                     var token = model.toJSON();
                     if (token.expires > Date.now()) {
-                        return models.User.findOne({id: token.user_id})
+                        return models.User.findOne({id: token.user_id}, {include:['roles']})
                             .then(function then(model) {
                                 if (model) {
                                     var user = model.toJSON(),
-                                        info = {scope: '*'};
+                                        info = {scope: '*', isAdmin: model.hasRole('Administrator')};
                                     return done(null, {id: user.id}, info);
                                 }
                                 return done(null, false);

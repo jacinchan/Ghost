@@ -30,7 +30,7 @@ module.exports = {
         name: {type: 'string', maxlength: 150, nullable: false},
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
         password: {type: 'string', maxlength: 60, nullable: false},
-        email: {type: 'string', maxlength: 254, nullable: false, unique: true, validations: {isEmail: true}},
+        email: {type: 'string', maxlength: 254, nullable: true, unique: true, validations: {isEmail: true}},
         image: {type: 'text', maxlength: 2000, nullable: true},
         cover: {type: 'text', maxlength: 2000, nullable: true},
         bio: {type: 'string', maxlength: 200, nullable: true},
@@ -38,6 +38,7 @@ module.exports = {
         location: {type: 'text', maxlength: 65535, nullable: true},
         facebook: {type: 'text', maxlength: 2000, nullable: true},
         twitter: {type: 'text', maxlength: 2000, nullable: true},
+        wechat_open_id: {type: 'text', maxlength: 2000, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'active'},
         language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
@@ -123,6 +124,12 @@ module.exports = {
     posts_tags: {
         id: {type: 'increments', nullable: false, primary: true},
         post_id: {type: 'integer', nullable: false, unsigned: true, references: 'posts.id'},
+        tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'tags.id'},
+        sort_order: {type: 'integer',  nullable: false, unsigned: true, defaultTo: 0}
+    },
+    tags_users: {
+        id: {type: 'increments', nullable: false, primary: true},
+        user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
         tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'tags.id'},
         sort_order: {type: 'integer',  nullable: false, unsigned: true, defaultTo: 0}
     },

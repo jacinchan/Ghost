@@ -466,6 +466,10 @@ Post = ghostBookshelf.Model.extend({
         return this.belongsToMany('Tag').withPivot('sort_order').query('orderBy', 'sort_order', 'ASC');
     },
 
+    readers: function readers() {
+        return this.belongsToMany('User').through('Tag');
+    },
+
     fields: function fields() {
         return this.morphMany('AppField', 'relatable');
     },
@@ -593,7 +597,7 @@ Post = ghostBookshelf.Model.extend({
      */
     filterData: function filterData(data) {
         var filteredData = ghostBookshelf.Model.filterData.apply(this, arguments),
-            extraData = _.pick(data, ['tags']);
+            extraData = _.pick(data, ['tags', 'readers']);
 
         _.merge(filteredData, extraData);
         return filteredData;

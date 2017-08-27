@@ -69,6 +69,10 @@
                 {
                     "name":             "Owner",
                     "description":      "Blog Owner"
+                },
+                {
+                    "name":             "Reader",
+                    "description":      "Reader"
                 }
             ]
         },
@@ -339,7 +343,12 @@
                     "role": ["browse"],
                     "client": "all",
                     "subscriber": ["add"]
+                },
+                "Reader": {
+                    "post": ["browse", "read"],
+                    "client": "all"
                 }
+
             }
         },
         {

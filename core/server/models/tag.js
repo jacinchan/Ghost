@@ -47,6 +47,10 @@ Tag = ghostBookshelf.Model.extend({
         return this.belongsToMany('Post');
     },
 
+    users: function users() {
+        return this.belongsToMany('User');
+    },
+
     toJSON: function toJSON(options) {
         options = options || {};
 

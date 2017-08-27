@@ -39,6 +39,7 @@ posts = {
     browse: function browse(options) {
         var extraOptions = ['status'],
             permittedOptions,
+            isAdmin = options.context && options.context.isAdmin,
             tasks;
 
         // Workaround to remove static pages from results
@@ -58,11 +59,32 @@ posts = {
             return dataProvider.Post.findPage(options);
         }
 
+
+        function filterReader(options){
+            if(isAdmin)return options;
+            else
+                return dataProvider.User
+                        .where({id:options.context.user}).fetch()
+                        .then(model=>{
+                        if(model)
+                        return model.tags().fetch().then(tags=>{
+                            readerTagIds = tags.pluck('id');
+                            filterGql = 'tags:null';
+                            readerGql = readerTagIds.join(',');
+                            readerGql = readerGql ? ',tags.id:[' + readerGql + ']' : '';
+                            filterGql += readerTagIds ? readerGql : '';
+                            options.filter = filterGql;
+                            return options;
+                        });
+                    });
+        }
+
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
             utils.handlePublicPermissions(docName, 'browse'),
             utils.convertOptions(allowedIncludes),
+            filterReader,
             modelQuery
         ];
 

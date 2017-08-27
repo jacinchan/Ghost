@@ -167,6 +167,18 @@ User = ghostBookshelf.Model.extend({
         return this.belongsToMany('Permission');
     },
 
+    tags: function tags() {
+        return this.belongsToMany('Tag');
+    },
+
+    hasTag: function hasTag(tagName) {
+        var tags = this.related('tags');
+
+        return tags.some(function getTag(tag) {
+            return tag.get('name') === tagName;
+        });
+    },
+
     hasRole: function hasRole(roleName) {
         var roles = this.related('roles');
 
@@ -264,9 +276,11 @@ User = ghostBookshelf.Model.extend({
         var query,
             status,
             optInc,
-            lookupRole = data.role;
+            lookupRole = data.role,
+            lookupTag = data.tag;
 
         delete data.role;
+        delete data.tag;
 
         data = _.defaults(data || {}, {
             status: 'active'
@@ -280,7 +294,7 @@ User = ghostBookshelf.Model.extend({
         options.withRelated = _.union(options.withRelated, options.include);
         data = this.filterData(data);
 
-        // Support finding by role
+        // Support finding by role and tag
         if (lookupRole) {
             options.withRelated = _.union(options.withRelated, ['roles']);
             options.include = _.union(options.include, ['roles']);
@@ -290,6 +304,15 @@ User = ghostBookshelf.Model.extend({
             query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
             query.query('join', 'roles', 'roles_users.role_id', '=', 'roles.id');
             query.query('where', 'roles.name', '=', lookupRole);
+        } else if(lookupTag) {
+            options.withRelated = _.union(options.withRelated, ['tags']);
+            options.include = _.union(options.include, ['tags']);
+
+            query = this.forge(data, {include: options.include});
+
+            query.query('join', 'tags_users', 'users.id', '=', 'tags_users.user_id');
+            query.query('join', 'tags', 'tags_users.tag_id', '=', 'tags.id');
+            query.query('where', 'tags.name', '=', lookupTag);
         } else {
             // We pass include to forge so that toJSON has access
             query = this.forge(data, {include: options.include});

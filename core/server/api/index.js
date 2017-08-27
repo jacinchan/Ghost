@@ -237,6 +237,7 @@ http = function http(apiMethod) {
             options = _.extend({}, req.file, req.query, req.params, {
                 context: {
                     user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null,
+                    isAdmin: req.authInfo && req.authInfo.isAdmin,
                     client: (req.client && req.client.slug) ? req.client.slug : null
                 }
             });
