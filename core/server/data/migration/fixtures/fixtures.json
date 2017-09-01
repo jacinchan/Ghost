@@ -48,6 +48,12 @@
                     "slug":             "ghost-scheduler",
                     "status":           "enabled",
                     "type":             "web"
+                },
+                {
+                    "name":             "wechat",
+                    "slug":             "wechat-app",
+                    "status":           "enabled",
+                    "type":             "wechat"
                 }
             ]
         },

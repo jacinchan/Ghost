@@ -80,7 +80,8 @@
                 "invalidClient": "Invalid client.",
                 "invalidRefreshToken": "Invalid refresh token.",
                 "refreshTokenExpired": "Refresh token expired.",
-                "tokenExpired": "Token expired."
+                "tokenExpired": "Token expired.",
+                "invalidCode": "Invalid code."
             },
             "privateblogging": {
                 "wrongPassword": "Wrong password"

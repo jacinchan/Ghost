@@ -65,6 +65,8 @@
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.4",
+    "request": "https://registry.npmjs.org/request/-/request-2.75.0.tgz",
+    "request-promise": "^4.2.1",
     "rimraf": "2.5.1",
     "rss": "1.2.2",
     "sanitize-html": "1.14.1",

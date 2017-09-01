@@ -2,7 +2,7 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     errors         = require('../errors'),
     utils          = require('../utils'),
-    gravatar       = require('../utils/gravatar'),
+    // gravatar       = require('../utils/gravatar'),
     bcrypt         = require('bcryptjs'),
     ghostBookshelf = require('./base'),
     crypto         = require('crypto'),
@@ -11,6 +11,7 @@ var _              = require('lodash'),
     events         = require('../events'),
     i18n           = require('../i18n'),
     pipeline       = require('../utils/pipeline'),
+    coreUtils      = require('../utils'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -432,7 +433,7 @@ User = ghostBookshelf.Model.extend({
             return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function then(authorRole) {
                 return [authorRole.get('id')];
             });
-        }
+        }    
 
         roles = data.roles || getAuthorRole();
         delete data.roles;
@@ -441,7 +442,8 @@ User = ghostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
             // LookupGravatar
-            return gravatar.lookup(userData);
+            // return gravatar.lookup(userData);
+            return userData;
         }).then(function then(userData) {
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
@@ -485,7 +487,6 @@ User = ghostBookshelf.Model.extend({
             userData.password = hash;
 
             return Promise.join(
-                gravatar.lookup(userData),
                 ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options)
             );
         }).then(function then(results) {
@@ -644,6 +645,43 @@ User = ghostBookshelf.Model.extend({
 
             return Promise.reject(error);
         });
+    },
+
+    wechat_login: function wechat_login(object){
+        var self = this;
+
+        return self.findOne({wechat_open_id: object.wechat_open_id, status: 'all'}, {include: ['roles']})
+                    .then(user=>{
+                        if(user)
+                            return user;
+                        else 
+                            return self.createDefaultUserForWechat(object);
+                    }).then(user=>{
+                        user = user.toJSON();
+                        if(user.name == 'wechat_new')
+                            user.isNew = true;
+                        return user;
+                    });
+
+    },
+
+    createDefaultUserForWechat: function createDefaultUserForWechat(object){
+        var self = this,
+            user = {
+                name: 'wechat_new',
+                wechat_open_id: object.wechat_open_id,
+                status:         'active',
+                password:       coreUtils.uid(50)
+            }
+        ;
+        return ghostBookshelf.model('Role').findOne({name: 'Reader'})
+                .then(readerRole=> {
+                    if (readerRole) {
+                        user.roles = [readerRole.id];
+                        return self.add(user, {context:{internal:1}});
+                    }
+                });
+
     },
 
     /**
@@ -868,7 +906,8 @@ User = ghostBookshelf.Model.extend({
                 return userWithEmail;
             }
         });
-    }
+    },
+
 });
 
 Users = ghostBookshelf.Collection.extend({

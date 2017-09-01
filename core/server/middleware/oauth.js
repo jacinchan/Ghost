@@ -4,6 +4,8 @@ var oauth2orize = require('oauth2orize'),
     errors = require('../errors'),
     spamPrevention = require('./spam-prevention'),
     i18n = require('../i18n'),
+    rp = require('request-promise'),
+    _ = require('lodash'),
 
     oauthServer,
     oauth;
@@ -107,6 +109,65 @@ function exchangePassword(client, username, password, scope, done) {
     });
 }
 
+function exchangeCode(client, code, redirectURI, done) {
+    if (!client || client.type != 'wechat') {
+        return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
+    }
+    var 
+    settings = _.chain(client.clientSettings)
+                .keyBy('key')
+                .mapValues('value')
+                .value(),
+    options = {
+        uri: 'https://api.weixin.qq.com/sns/jscode2session',
+        qs: {
+            grant_type: 'authorization_code',
+            appid: settings.appid,
+            secret: settings.secret,
+            js_code: code
+        },
+        json: true
+    };
+
+    rp(options).then(repos=>{
+        if(repos && repos.openid){
+            return models.User.wechat_login({wechat_open_id: repos.openid})
+                .then(user=>{
+                    var accessToken = utils.uid(256),
+                        refreshToken = utils.uid(256),
+                        accessExpires = Date.now() + utils.ONE_HOUR_MS,
+                        refreshExpires = Date.now() + utils.ONE_WEEK_MS,
+                        isNew = user.isNew;
+
+                    return models.Accesstoken.add(
+                            {
+                                token: accessToken,
+                                user_id: user.id,
+                                client_id: client.id,
+                                expires: accessExpires
+                            })
+                    .then(()=> {
+                    return models.Refreshtoken.add(
+                            {
+                                token: refreshToken,
+                                user_id: user.id,
+                                client_id: client.id,
+                                 expires: refreshExpires
+                             });})
+                    .then(()=> {
+                    return done(null, accessToken, refreshToken, {expires_in: utils.ONE_HOUR_S, isNew:isNew})});
+                    })
+        } else
+        done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidCode')), false);
+  //       { session_key: 'dQ1lDbyClkcm5ZjFqjh/Fg==',
+  //        expires_in: 7200,
+  //        openid: 'or00b0arfPYT1_jQXImtB-a2_WHM' }
+
+    })
+    .catch(err=>done(err, false));
+
+}
+
 oauth = {
 
     init: function init() {
@@ -130,6 +191,10 @@ oauth = {
         // access token on behalf of the user who authorized the code.
         oauthServer.exchange(oauth2orize.exchange.refreshToken({userProperty: 'client'},
             exchangeRefreshToken));
+
+        oauthServer.exchange('wechat_code', oauth2orize.exchange.authorizationCode({userProperty: 'client'},
+            exchangeCode));
+        
     },
 
     // ### Generate access token Middleware

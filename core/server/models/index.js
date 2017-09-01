@@ -20,6 +20,7 @@ models = [
     'app-setting',
     'app',
     'client-trusted-domain',
+    'client-setting',
     'client',
     'permission',
     'post',

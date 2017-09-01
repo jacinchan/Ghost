@@ -28,8 +28,8 @@ spamPrevention = {
 
         if (req.body.username && req.body.grant_type === 'password') {
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
-        } else if(req.body.wechat_open_id && req.body.grant_type === 'wechat_code'){
-            loginSecurity.push({ip: remoteAddress, time: currentTime, wechat_code: req.body.wechat_code});
+        } else if(req.body.code && req.body.grant_type === 'wechat_code'){
+            loginSecurity.push({ip: remoteAddress, time: currentTime, wechat_code: req.body.code});
         } else if (req.body.grant_type === 'refresh_token') {
             return next();
         } else {

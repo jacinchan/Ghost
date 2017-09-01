@@ -27,8 +27,8 @@ module.exports = {
     users: {
         id: {type: 'increments', nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
-        name: {type: 'string', maxlength: 150, nullable: false},
-        slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
+        name: {type: 'string', maxlength: 150, nullable: true},
+        slug: {type: 'string', maxlength: 150, nullable: true, unique: true},
         password: {type: 'string', maxlength: 60, nullable: false},
         email: {type: 'string', maxlength: 254, nullable: true, unique: true, validations: {isEmail: true}},
         image: {type: 'text', maxlength: 2000, nullable: true},
@@ -38,7 +38,7 @@ module.exports = {
         location: {type: 'text', maxlength: 65535, nullable: true},
         facebook: {type: 'text', maxlength: 2000, nullable: true},
         twitter: {type: 'text', maxlength: 2000, nullable: true},
-        wechat_open_id: {type: 'text', maxlength: 2000, nullable: true},
+        wechat_open_id: {type: 'text', maxlength: 2000, nullable: true, unique: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'active'},
         language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
@@ -192,6 +192,14 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false},
         client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
         trusted_domain: {type: 'string', maxlength: 2000, nullable: true}
+    },
+    client_settings: {
+        id: {type: 'increments', nullable: false, primary: true},
+        client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
+        key: {type: 'string', maxlength: 150, nullable: false, unique: true},
+        value: {type: 'text', maxlength: 65535, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     },
     accesstokens: {
         id: {type: 'increments', nullable: false, primary: true},
